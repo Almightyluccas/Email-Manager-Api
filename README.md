@@ -1,2 +1,5 @@
 # Email-Manager-Api
-Api for Email Manager that I have created
+**Still a work in progress**
+* Rest API for Email Manager that I have created
+
+ 
