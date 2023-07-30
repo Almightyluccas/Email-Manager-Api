@@ -13,12 +13,12 @@ class IMAPInterface:
         if mailbox is not None:
             self.mailbox = self.mail.select(mailbox)
 
-    def fetchAllEmails(self, limit: int = None) -> Union[Dict[str, str], Dict[str, List[Dict[str, str]]]]:
+    def fetch_emails(self, criteria: str, limit: int = None) -> Union[Dict[str, str], Dict[str, List[Dict[str, str]]]]:
         try:
             if not self.mail:
                 raise ValueError("Not connected to the mail server. Call 'connect()' first.")
 
-            _, data = self.mail.search(None, 'ALL')
+            _, data = self.mail.search(None, criteria)
             email_ids = data[0].split()
 
             if limit is not None:
