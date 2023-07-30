@@ -10,7 +10,8 @@ imapURL = information_needed['imapURL']
 email_client = Imap(login_info['email'], login_info['password'], imapURL['outlook'], 'inbox')
 # test new methods below
 
-print(email_client.fetch_emails('UNSEEN'), 1)
+print(email_client.fetchAllMailboxes())
 
 
 email_client.closeConnection()
+
