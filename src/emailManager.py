@@ -26,7 +26,7 @@ async def get_emails(data: LoginData, mailbox: str, number_of_emails: Optional[i
     except Exception:
         raise HTTPException(status_code=400, detail="Failed to login")
     try:
-        emails = email_client.fetchAllEmails(number_of_emails)
+        emails = email_client.fetch_emails('ALL', number_of_emails)
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to fetch emails")
     email_client.closeConnection()
@@ -48,18 +48,18 @@ async def get_emails_before_date(data: LoginData, mailbox: str, date: str):
 
 
 @app.post('/email/all/unseen/{mailbox}')
-async def get_unseen_emails(data: LoginData, mailbox: str):
+async def get_unseen_emails(data: LoginData, mailbox: str, number_of_emails: Optional[int] = None):
     try:
         email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox)
     except Exception:
         raise HTTPException(status_code=400, detail='Failed to login')
     try:
-        email_client.fetchUnseenEmails()
-    except:
+        email_client.fetch_emails('UNSEEN', number_of_emails)
+    except Exception:
         raise HTTPException(status_code=500, detail='Failed to fetch mailboxes')
 
 
-@app.post('/email/get-all-mailboxes')
+@app.post('/email/mailboxes')
 async def get_all_mailboxes(data: LoginData):
     try:
         email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider])
