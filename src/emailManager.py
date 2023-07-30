@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Path, Query, HTTPException, status
 from typing import Optional
 from pydantic import BaseModel
-from classes.imapInterface import IMAPInterface
+from src.classes.imapInterface import IMAPInterface
 
 app = FastAPI(debug=True)
 
@@ -85,3 +85,7 @@ async def get_total_number_of_emails(data: LoginData, mailbox: str):
         raise HTTPException(status_code=500, detail='Failed to fetch total number of emails')
     email_client.closeConnection()
     return total_emails
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host='0.0.0.0', port=8000)
