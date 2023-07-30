@@ -48,4 +48,25 @@ when removing the call to `mark as seen` the avg time was down to `2.30s`
 
 * **Possible Solutions**:
   * optimize the request made to imap server so we don't need to mark as seen
+
+## Future Version - Tests
+
+### API Version 2:
+
+#### &nbsp; Differnent email parsers to test:
+* Currently using `email.parser` 
+
+* `cemail` (cython-based email parsing) library instead of `email.parser` from the standard library
+  * cemail is a Cython-based library that aims to provide faster email parsing. It is a drop-in replacement
+  for Python's email.parser and claims to be significantly faster. Install it using:
+    ```bash
+    pip install cemail
+    ```
+*  `pymailparser` a library specifically designed for parsing emails. It claims to have better performance than 
+Python's built-in email parsing libraries.
+    * Install it using:
+      ```bash
+      pip install pymailparser
+      ```
+    
   
