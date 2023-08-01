@@ -15,9 +15,6 @@ class IMAPInterface:
 
     def fetch_emails(self, criteria: str, limit: int = None) -> Union[Dict[str, str], Dict[str, List[Dict[str, str]]]]:
         try:
-            if not self.mail:
-                raise ValueError("Not connected to the mail server. Call 'connect()' first.")
-
             _, data = self.mail.search(None, criteria)
             email_ids = data[0].split()
 
@@ -44,7 +41,8 @@ class IMAPInterface:
         except Exception as e:
             return {'error': str(e)}
 
-    def fetchEmailBeforeDate(self, fetchBeforeDate: str) -> Union[Dict[str, str], Dict[str, List[Dict[str, str]]]]:
+    def fetchEmailBeforeDate(self, fetchBeforeDate: str, optional_flag: str = None) \
+            -> Union[Dict[str, str], Dict[str, List[Dict[str, str]]]]:
         result, data = self.mail.uid('search', None, f'(BEFORE "{fetchBeforeDate}")')
         fetched_email = []
 
@@ -70,10 +68,13 @@ class IMAPInterface:
                                 'Subject': subject,
                                 'UID': num
                             })
+                            if optional_flag is not None:
+                                self.mail.store(num, '+FLAGS', f'{optional_flag}')
                     else:
                         print("No email data for UID ", num)
         self.mail.close()
         return {
+
             'emails': fetched_email,
             'totalFetched': total_fetched + 1
         }
