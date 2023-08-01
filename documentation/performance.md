@@ -1,4 +1,6 @@
+## Possible Additions
 
+- test to see if multiprocessing would increase the response time of the api and performing necessary actions
 
 ## Potential Performance Hits
 
@@ -68,5 +70,11 @@ Python's built-in email parsing libraries.
       ```bash
       pip install pymailparser
       ```
+      
+
+
+
+
+
     
   
