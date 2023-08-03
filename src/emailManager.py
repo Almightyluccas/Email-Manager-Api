@@ -2,12 +2,13 @@ from fastapi import FastAPI, HTTPException, Body
 from typing import Optional
 from pydantic import BaseModel
 from classes.imapInterface import IMAPInterface
+from classes.imapInterface import ImapExceptionCust
 
 app = FastAPI(debug=True)
 
 imapURLDict = {
     'gmail': 'imap.gmail.com',
-    'outlook': 'imap-mail.outlook.com',
+    'outlook': 'outlook.office365.com',
     'yahoo': 'imap.mail.yahoo.com',
     'aol': 'imap.aol.com'
 }
@@ -20,75 +21,53 @@ class LoginData(BaseModel):
 
 
 @app.post("/emails/all/{mailbox}")
-async def get_emails(
-        mailbox: str,
-        data: LoginData = Body(...),
-        number_of_emails: Optional[int] = None
-):
+async def get_emails(mailbox: str, data: LoginData = Body(...), number_of_emails: Optional[int] = 10):
     try:
-        email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to login:  {e}")
-    try:
-        emails = email_client.fetch_emails('ALL', number_of_emails)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Failed to fetch emails")
-    email_client.closeConnection()
+        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
+            emails = email_client.fetch_emails('ALL', number_of_emails)
+    except ImapExceptionCust as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     return emails
 
 
 @app.post('/emails/all/before-date/{date}/{mailbox}')
 async def get_emails_before_date(mailbox: str, date: str, data: LoginData = Body(...), flag: Optional[str] = None):
     try:
-        email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox)
-    except Exception:
-        raise HTTPException(status_code=400, detail='Failed to login')
-    try:
+        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
             emails = email_client.fetchEmailBeforeDate(date, flag)
-    except Exception:
-        raise HTTPException(status_code=500, detail='Failed to fetch emails')
-    email_client.closeConnection()
-    return emails
+            return emails
+    except ImapExceptionCust as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
 @app.post('/emails/all/unseen/{mailbox}')
-async def get_unseen_emails(mailbox: str, data: LoginData = Body(...), number_of_emails: Optional[int] = None):
+async def get_unseen_emails(mailbox: str, data: LoginData = Body(...), number_of_emails: Optional[int] = 10):
     try:
-        email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox)
-    except Exception:
-        raise HTTPException(status_code=400, detail='Failed to login')
-    try:
-        email_client.fetch_emails('UNSEEN', number_of_emails)
-    except Exception:
-        raise HTTPException(status_code=500, detail='Failed to fetch mailboxes')
+        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
+            emails = email_client.fetch_emails('UNSEEN', number_of_emails)
+            return emails
+    except ImapExceptionCust as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
 @app.post('/emails/mailboxes/all')
 async def get_all_mailboxes(data: LoginData = Body(...)):
     try:
-        email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider])
-    except Exception:
-        raise HTTPException(status_code=400, detail='Failed to login')
-    try:
-        mailboxes = email_client.fetchAllMailboxes()
-    except Exception:
-        raise HTTPException(status_code=500, detail='Failed to fetch mailboxes')
-    email_client.closeConnection()
-    return mailboxes
+        with IMAPInterface(data.email, data.password, imapURLDict[data.provider]) as email_client:
+            mailboxes = email_client.fetchAllMailboxes()
+            return mailboxes
+    except ImapExceptionCust as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
 @app.post('/emails/mailboxes/{mailbox}/count')
 async def get_total_number_of_emails(mailbox: str, data: LoginData = Body(...)):
     try:
-        email_client = IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox)
-    except Exception:
-        raise HTTPException(status_code=400, detail='Failed to login')
-    try:
-        total_emails = email_client.fetchTotalNumberEmails()
-    except Exception:
-        raise HTTPException(status_code=500, detail='Failed to fetch total number of emails')
-    email_client.closeConnection()
-    return total_emails
+        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
+            total_emails = email_client.fetchTotalNumberEmails()
+            return total_emails
+    except ImapExceptionCust as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
 @app.post('/emails/mailboxes/{email_id}/transfer/{mailbox_from}/{mailbox_to}')
@@ -96,7 +75,20 @@ async def transfer_email(email_id: str, mailbox_from: str, mailbox_to: str, data
     return {'message': 'test transfer email route'}
 
 
-@app.delete('emails/trash/transfer/{email_id}')
+@app.post('/mailbox/create/{mailbox_name}')
+async def create_mailbox(mailbox_name: str, data: LoginData = Body(...)):
+
+    return {'message': 'test create mailbox route'}
+
+
+@app.delete('/mailbox/delete/{mailbox_name')
+async def delete_mailbox(mailbox_name: str, data: LoginData = Body(...)):
+    # make sure that only user created mailboxes can be deleted,
+    # meaning that default mailboxes must remain (list of defaults)
+    return {'message': 'test mailbox delete route'}
+
+
+@app.delete('/emails/trash/transfer/{email_id}')
 async def transfer_email_to_trash(email_id: str, mailbox_from: str):
     return {'message': 'test transfer to trash'}
 
