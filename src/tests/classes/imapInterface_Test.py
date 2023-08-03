@@ -1,4 +1,4 @@
-from src.classes.imapInterface import IMAPInterface
+from src.classes.ImapInterface import IMAPInterface
 import time
 
 

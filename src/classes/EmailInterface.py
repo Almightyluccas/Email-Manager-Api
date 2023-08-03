@@ -1,38 +1,11 @@
 import email
-import imaplib
 from typing import Dict, Union, List, Tuple
 from datetime import datetime
+from .ImapInterface import IMAPInterface
+from .ImapExceptionCustom import ImapExceptionCust
 
 
-class ImapExceptionCust(Exception):
-    def __init__(self, status_code: int, detail: str, custom_data: dict = None):
-        self.status_code = status_code
-        self.detail = detail
-        self.custom_data = custom_data
-        super().__init__(detail)
-
-
-# noinspection PyUnresolvedReferences,PyTypeChecker
-class IMAPInterface:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.mail.logout()
-
-    def __init__(self, username: str, password: str, imapURL: str, mailbox: str = None) -> None:
-        try:
-            self.mail = imaplib.IMAP4_SSL(imapURL)
-            self.mail.login(username, password)
-            if mailbox is not None:
-                self.mailbox = self.mail.select(mailbox)
-                response_code, response_msg = self.mailbox
-                if response_code != 'OK':
-                    raise ImapExceptionCust(422, f"Mailbox '{mailbox}' does not exist.")
-
-        except Exception as e:
-            raise ImapExceptionCust(400, str(e))
-
+class EmailInterface(IMAPInterface):
     def fetch_emails(self, criteria: str, limit: int = None) -> Union[Dict[str, str], Dict[str, List[Dict[str, str]]]]:
         try:
             _, data = self.mail.search(None, criteria)
@@ -103,26 +76,6 @@ class IMAPInterface:
         except Exception as e:
             raise ImapExceptionCust(500, str(e))
 
-    def fetchAllMailboxes(self) -> Dict[str, List[bytes]]:
-        try:
-            response = self.mail.list()
-            _, mailboxes_data = response
-            mailboxes = [mailbox.decode().split()[-1].strip('"') for mailbox in mailboxes_data]
-            return {'mailboxes': mailboxes}
-        except Exception as e:
-            ImapExceptionCust(500, str(e))
-
-    def fetchTotalNumberEmails(self) -> Dict[str, int]:
-        try:
-            status, response = self.mailbox
-            self.mail.close()
-
-            if status == 'OK':
-                total_emails_num = int(response[0])
-                return {'totalEmailsNum': total_emails_num}
-        except Exception as e:
-            ImapExceptionCust(500, str(e))
-
     def deleteMarkedEmails(self, deleteBeforeDate: str) -> Tuple[int, List[str]]:
         try:
             markedEmails = self.fetchEmailBeforeDate(deleteBeforeDate)
@@ -131,6 +84,7 @@ class IMAPInterface:
 
             for mail in markedEmails:
                 try:
+                    # noinspection PyTypeChecker
                     self.mail.uid('store', mail['UID'], '+FLAGS', '\\Deleted')
                     successfullyDeleted += 1
                 except Exception as e:
@@ -139,42 +93,3 @@ class IMAPInterface:
                 return successfullyDeleted, errors
         except Exception as e:
             ImapExceptionCust(500, str(e))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

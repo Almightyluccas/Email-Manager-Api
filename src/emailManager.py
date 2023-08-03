@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Body
 from typing import Optional
 from pydantic import BaseModel
-from classes.imapInterface import IMAPInterface
-from classes.imapInterface import ImapExceptionCust
+from classes.EmailInterface import EmailInterface
+from classes.MailboxInterface import MailboxInterface
+from classes.ImapExceptionCustom import ImapExceptionCust
 
 app = FastAPI(debug=True)
 
@@ -23,7 +24,7 @@ class LoginData(BaseModel):
 @app.post("/emails/all/{mailbox}")
 async def get_emails(mailbox: str, data: LoginData = Body(...), number_of_emails: Optional[int] = 10):
     try:
-        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
+        with EmailInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
             emails = email_client.fetch_emails('ALL', number_of_emails)
     except ImapExceptionCust as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
@@ -33,7 +34,7 @@ async def get_emails(mailbox: str, data: LoginData = Body(...), number_of_emails
 @app.post('/emails/all/before-date/{date}/{mailbox}')
 async def get_emails_before_date(mailbox: str, date: str, data: LoginData = Body(...), flag: Optional[str] = None):
     try:
-        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
+        with EmailInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
             emails = email_client.fetchEmailBeforeDate(date, flag)
             return emails
     except ImapExceptionCust as e:
@@ -43,28 +44,28 @@ async def get_emails_before_date(mailbox: str, date: str, data: LoginData = Body
 @app.post('/emails/all/unseen/{mailbox}')
 async def get_unseen_emails(mailbox: str, data: LoginData = Body(...), number_of_emails: Optional[int] = 10):
     try:
-        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
+        with EmailInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
             emails = email_client.fetch_emails('UNSEEN', number_of_emails)
             return emails
     except ImapExceptionCust as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
-@app.post('/emails/mailboxes/all')
+@app.post('/mailboxes/all')
 async def get_all_mailboxes(data: LoginData = Body(...)):
     try:
-        with IMAPInterface(data.email, data.password, imapURLDict[data.provider]) as email_client:
-            mailboxes = email_client.fetchAllMailboxes()
+        with MailboxInterface(data.email, data.password, imapURLDict[data.provider]) as mailbox_client:
+            mailboxes = mailbox_client.fetchAllMailboxes()
             return mailboxes
     except ImapExceptionCust as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
-@app.post('/emails/mailboxes/{mailbox}/count')
-async def get_total_number_of_emails(mailbox: str, data: LoginData = Body(...)):
+@app.post('/mailboxes/count/{mailbox}')
+async def get_total_emails_in_specific_mailbox(mailbox: str, data: LoginData = Body(...)):
     try:
-        with IMAPInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
-            total_emails = email_client.fetchTotalNumberEmails()
+        with MailboxInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as mailbox_client:
+            total_emails = mailbox_client.fetch_total_emails_in_current_mailbox()
             return total_emails
     except ImapExceptionCust as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
@@ -75,13 +76,13 @@ async def transfer_email(email_id: str, mailbox_from: str, mailbox_to: str, data
     return {'message': 'test transfer email route'}
 
 
-@app.post('/mailbox/create/{mailbox_name}')
+@app.post('/mailboxes/create/{mailbox_name}')
 async def create_mailbox(mailbox_name: str, data: LoginData = Body(...)):
 
     return {'message': 'test create mailbox route'}
 
 
-@app.delete('/mailbox/delete/{mailbox_name')
+@app.delete('/mailboxes/delete/{mailbox_name')
 async def delete_mailbox(mailbox_name: str, data: LoginData = Body(...)):
     # make sure that only user created mailboxes can be deleted,
     # meaning that default mailboxes must remain (list of defaults)

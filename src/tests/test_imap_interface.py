@@ -1,6 +1,6 @@
 from classes.imapInterface_Test import IMAPInterfaceTest as Imap
 from classes.testUtils import TestUtilities
-from src.classes.imapInterface import ImapExceptionCust
+from src.classes.ImapInterface import ImapExceptionCust
 import time
 import multiprocessing
 
