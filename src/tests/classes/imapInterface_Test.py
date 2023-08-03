@@ -10,7 +10,7 @@ class IMAPInterfaceTest(IMAPInterface):
         self.fetchAllMailboxes()
         print("--- %s seconds ---\n" % (time.time() - start_time_fetch_fetchAllMailboxes))
 
-    def test_fetch_Email_Before_Date_method(self, date: str, flag: str = None):
+    def test_fetchEmailBeforeDate(self, date: str, flag: str = None):
         start_time_fetch_before_date = time.time()
         print(self.fetchEmailBeforeDate(date, flag))
         print("--- %s seconds ---\n" % (time.time() - start_time_fetch_before_date))
