@@ -1,9 +1,13 @@
+import queue
+import time
+
 from fastapi import FastAPI, HTTPException, Body
 from typing import Optional
 from pydantic import BaseModel
 from classes.EmailInterface import EmailInterface
 from classes.MailboxInterface import MailboxInterface
 from classes.ImapExceptionCustom import ImapExceptionCust
+import threading
 
 app = FastAPI(debug=True)
 
@@ -13,6 +17,27 @@ imapURLDict = {
     'yahoo': 'imap.mail.yahoo.com',
     'aol': 'imap.aol.com'
 }
+
+emails = {'emails': None,
+          'totalFetched': 0
+          }
+emails_lock = threading.Lock()
+
+def test_fetch_emails_wrapper(criteria: str, batch_size: int, total_emails: int, data):
+    try:
+        with EmailInterface(data.email, data.password, imapURLDict[data.provider], 'inbox') as email_interface:
+            fetched_emails = email_interface.fetch_emails(criteria, batch_size, total_emails)
+
+            # Acquire the lock before updating the list and counter
+            with emails_lock:
+                if emails['emails'] is None:
+                    emails['emails'] = []
+                emails['emails'] += (fetched_emails['emails'])
+                emails['totalFetched'] += fetched_emails['totalFetched']
+    except ImapExceptionCust as ce:
+        return ce.status_code, ce.detail
+
+
 
 
 class LoginData(BaseModel):
@@ -25,10 +50,16 @@ class LoginData(BaseModel):
 async def get_emails(mailbox: str, data: LoginData = Body(...), number_of_emails: Optional[int] = 10):
     try:
         with EmailInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
-            emails = email_client.fetch_emails('ALL', number_of_emails)
+            start_time_threads = time.time()
+            emails = email_client.fetch_emails('ALL', 10, number_of_emails)
+            threaded_time = time.time() - start_time_threads
     except ImapExceptionCust as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
-    return emails
+    return {
+        "emails": emails['emails'],
+        "total_fetched": emails['totalFetched'],
+        "threaded_time": threaded_time
+    }
 
 
 @app.post('/emails/all/before-date/{date}/{mailbox}')
@@ -97,3 +128,41 @@ async def transfer_email_to_trash(email_id: str, mailbox_from: str):
 @app.delete('/emails/trash/delete')
 async def empty_delete_folder(data: LoginData = Body(...), number_of_emails: Optional[int] = None):
     return {'message': 'test delete route'}
+
+
+@app.post("/test")
+async def test_new_route(criteria: str, batch_size: int, total_emails: int, data: LoginData):
+    start_time_threads = time.time()
+
+    print('\nThreading...')
+    num_threads = 5
+    threads = []
+
+    for _ in range(num_threads):
+        thread = threading.Thread(
+            target=test_fetch_emails_wrapper,
+            args=(criteria, batch_size, num_threads * 10, data))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    threaded_time = time.time() - start_time_threads
+
+    return {
+        "emails": emails['emails'],
+        "total_fetched": emails['totalFetched'],
+        "threaded_time": threaded_time
+    }
+
+
+
+
+
+
+
+
+
+
+

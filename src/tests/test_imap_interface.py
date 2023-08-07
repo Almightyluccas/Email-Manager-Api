@@ -12,16 +12,22 @@ import multiprocessing
 test = TestUtilities()
 
 information_needed = test.parse_json_file('/home/lamorim/PycharmProjects/Email-Manager-Api/private/request_body.json')
-login_info = information_needed['login']['main']
+login_info = information_needed['login']['second']
 imapURL = information_needed['imapURL']
 email_client = Imap(login_info['email'], login_info['password'], imapURL['outlook'], 'inbox')
 
 try:
-    with Imap(login_info['email'], '343434WFD', imapURL['outlook'], 'inbox') as email_client:
-        print(email_client.fetchTotalNumberEmails())
+    with Imap(login_info['email'], login_info['password'], imapURL['outlook'], 'inbox') as email_client:
+        start_time_threads = time.time()
+        fetched_emails = email_client.fetch_emails('all', 20, 400)
+        threaded_time = time.time() - start_time_threads
+
 except ImapExceptionCust as ce:
     print(ce.status_code, ce.detail)
 
+print('\n\n' + 8 * '*' + ' Time Results ' + 8 * '*')
+print("\nThreaded time: %.2f seconds" % threaded_time)
+print(f"\nEmails Fetched: {fetched_emails['totalFetched']}")
 #
 #
 # num_processes = 10
