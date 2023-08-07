@@ -51,7 +51,7 @@ class EmailInterface(IMAPInterface):
             new_email_ids = [email_id for email_id in email_ids if email_id not in self.fetched_email_ids]
             num_batches = (total_emails + batch_size - 1) // batch_size
             emails = []
-            total_fetched = 0  # Initialize total_fetched outside the loop
+            total_fetched = 0
 
             for page in range(1, num_batches + 1):
                 start = (page - 1) * batch_size
