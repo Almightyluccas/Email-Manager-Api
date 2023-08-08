@@ -5,4 +5,3 @@ class LoginData(BaseModel):
     email: str
     password: str
     provider: str
-
