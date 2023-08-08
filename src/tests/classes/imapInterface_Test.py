@@ -1,5 +1,5 @@
-from src.classes.MailboxInterface import MailboxInterface
-from src.classes.EmailInterface import EmailInterface
+from src.utils.MailboxInterface import MailboxInterface
+from src.utils.EmailInterface import EmailInterface
 
 import time
 
