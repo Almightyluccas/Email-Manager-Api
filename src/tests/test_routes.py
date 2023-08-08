@@ -1,5 +1,4 @@
-from src.emailManager import app
-from fastapi import FastAPI
+from src.api_v1.routes import app
 
 if __name__ == "__main__":
     import uvicorn
