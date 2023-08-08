@@ -10,8 +10,6 @@ from ..utils.config import imapURLDict
 
 router = APIRouter()
 
-emails = {'emails': None, 'totalFetched': 0}
-
 
 @router.post("/emails/all/{mailbox}")
 async def get_emails(
@@ -25,8 +23,7 @@ async def get_emails(
             fetched_emails = email_client.fetch_emails('ALL', batch_size, number_of_emails)
             fetching_time = time.time() - start_time_fetching
             return {
-                "emails": fetched_emails['emails'],
-                "total_fetched": fetched_emails['totalFetched'],
+                'fetched': fetched_emails,
                 "time_taken_fetching": fetching_time
             }
     except ImapExceptionCust as e:
