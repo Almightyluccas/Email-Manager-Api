@@ -5,8 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(debug=True)
 
 origins = [
-    "http://localhost:63343/ReactLaravelFirstProject/"
-    "test.html?_ijt=g4pg8slgc9jjuj1ukf3i81fid8&_ij_reload=RELOAD_ON_SAVE",
+    "http://localhost:5173/",
 ]
 
 app.add_middleware(
