@@ -1,5 +1,5 @@
 import email
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Union, List, Tuple, Any
 from datetime import datetime
 from .ImapInterface import IMAPInterface
 from .ImapExceptionCustom import ImapExceptionCust
@@ -13,7 +13,8 @@ class EmailInterface(IMAPInterface):
     def clear_fetched_email_ids(self):
         self.fetched_email_ids.clear()
 
-    def fetch_emails(self, criteria: str, batch_size: int, total_emails: int) -> List[Dict[str, str]]:
+    def fetch_emails(self, criteria: str, batch_size: int, total_emails: int) \
+            -> dict[str, list[dict[str, str | Any]] | int]:
         try:
             _, data = self.mail.search(None, criteria)
             email_ids = data[0].split()
@@ -55,6 +56,7 @@ class EmailInterface(IMAPInterface):
         try:
             result, data = self.mail.uid('search', None, f'(BEFORE "{fetchBeforeDate}")')
             fetched_email = []
+            total_fetched = 0
 
             if result == 'OK':
                 emailIdList = data[0].split()
@@ -84,10 +86,7 @@ class EmailInterface(IMAPInterface):
                         else:
                             print("No email data for UID ", num)
             self.mail.close()
-            return {
-                'emails': fetched_email,
-                'totalFetched': total_fetched + 1
-            }
+            return {'emails': fetched_email, 'totalFetched': total_fetched + 1}
         except Exception as e:
             raise ImapExceptionCust(500, str(e))
 
