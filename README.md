@@ -6,30 +6,16 @@ on project
 
 **NOTE**: This project is still a work in progress and I plan on hosting the API in the cloud once all basic
 endpoints have been implemented
-## Installation
-
-1. Clone the repository:
-    ```bash
-   git clone https://github.com/Almightyluccas/Email-Manager-Api.git
-    ```
-2. Install the required dependencies:
-     ```bash
-   pip install fastapi
-    pip install uvicorn
-    pip install pydantic
-    ```
 
 ## Usage
 
-1. Navigate to the project directory:
-    ```bash
-   cd fastapi-email-fetch/src
-    ```
-2. Run the FastAPI application using Uvicorn
-    ```bash
-   uvicorn main:app --reload
-    ```
-3. The API will now be running locally at http://localhost:8000.
+1. Start by visiting the API documentation page: [MailMasterPro API Docs](https://email-manager-restapi-staging-4cd12bf74fde.herokuapp.com/docs).
+
+2. Choose the API route you intend to use and complete the required data fields.
+
+3. After making the request, you'll receive a JSON payload containing the desired data.
+
+***Note: For making requests to these routes, you can also use the fetch API or any HTTP client library of your choice.*** 
 
 ## Endpoints
 
@@ -103,3 +89,5 @@ The API provides the following endpoints:
   - Parameters:
     - `data`: JSON data containing `email`, `password`, and `provider` fields.
     - `number_of_emails`: (Optional) The maximum number of emails to delete from the trash.
+
+For more details, consult the provided API documentation schemas for LoginData, ValidationError, and HTTPValidationError.
