@@ -1,4 +1,5 @@
 auto_mix_prep==0.2.0
-fastapi==0.101.0
+fastapi~=0.100.1
 pydantic==2.1.1
-uvicorn==0.23.2
+uvicorn~=0.23.1
+redis~=4.6.0

@@ -1,6 +1,8 @@
 from src.utils.MailboxInterface import MailboxInterface
 from src.utils.EmailInterface import EmailInterface
-
+from typing import List, Dict, Union, Any
+from src.utils.ImapExceptionCustom import ImapExceptionCust
+import email
 import time
 
 
@@ -26,5 +28,4 @@ class IMAPInterfaceTest(MailboxInterface, EmailInterface):
     def test_fetch_emails_method(self, criteria: str, limit: int):
         print("Executing fetch_emails()...")
         self.fetch_emails(criteria, limit)
-
 
