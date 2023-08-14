@@ -2,11 +2,12 @@ import time
 from fastapi import APIRouter, HTTPException, Body
 from typing import Optional
 
-from .models import LoginData
-from ..utils.EmailInterface import EmailInterface
-from ..utils.MailboxInterface import MailboxInterface
-from ..utils.ImapExceptionCustom import ImapExceptionCust
-from ..utils.config import imapURLDict
+from api_v1.models import LoginData
+from .utils.EmailInterface import EmailInterface
+from .utils.MailboxInterface import MailboxInterface
+from .utils.ImapExceptionCustom import ImapExceptionCust
+from .utils.config import imapURLDict
+
 
 router = APIRouter()
 
@@ -20,10 +21,10 @@ async def get_emails(
     try:
         with EmailInterface(data.email, data.password, imapURLDict[data.provider], mailbox) as email_client:
             start_time_fetching = time.time()
-            fetched_emails = email_client.fetch_emails('ALL', batch_size, number_of_emails)
+            fetched_emails = email_client.fetch_emails_paginated('ALL', batch_size, number_of_emails)
             fetching_time = time.time() - start_time_fetching
             return {
-                'fetched': fetched_emails,
+                "fetched": fetched_emails,
                 "time_taken_fetching": fetching_time
             }
     except ImapExceptionCust as e:
@@ -72,7 +73,7 @@ async def get_total_emails_in_specific_mailbox(mailbox: str, data: LoginData = B
 
 @router.post('/emails/mailboxes/{email_id}/transfer/{mailbox_from}/{mailbox_to}')
 async def transfer_email(email_id: str, mailbox_from: str, mailbox_to: str, data: LoginData = Body(...)):
-    return {'message': 'test transfer email route'}
+    return {'message': 'test.PY transfer email route'}
 
 
 @router.post('/mailboxes/create/{mailbox_name}')
@@ -97,9 +98,9 @@ async def delete_mailbox(mailbox_name: str, data: LoginData = Body(...)):
 
 @router.delete('/emails/trash/transfer/{email_id}')
 async def transfer_email_to_trash(email_id: str, mailbox_from: str):
-    return {'message': 'test transfer to trash'}
+    return {'message': 'test.PY transfer to trash'}
 
 
 @router.delete('/emails/trash/delete')
 async def empty_delete_folder(data: LoginData = Body(...), number_of_emails: Optional[int] = None):
-    return {'message': 'test delete route'}
+    return {'message': 'test.PY delete route'}
